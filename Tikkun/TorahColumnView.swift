@@ -20,7 +20,7 @@ struct TorahColumnView: View {
                 .aspectRatio(1 / 3.65, contentMode: .fit)
                 .accessibilityLabel("Amud \(column.id). Torah column with 42 lines.")
                 .accessibilityValue(column.rows.flatMap(\.segments).flatMap { $0 }.flatMap { $0 }.map {
-                    HebrewText.display($0.text, vowels: vowels, trope: trope)
+                    HebrewText.display($0.text, vowels: vowels, trope: trope, verseEndings: false)
                 }.joined(separator: " "))
             Text("\(column.id)").font(.caption).foregroundStyle(.secondary)
         }
@@ -65,7 +65,7 @@ private final class ColumnInkView: UIView {
             let columnWidth = (bounds.width - columnGap * CGFloat(max(0, row.segments.count - 1))) / CGFloat(max(1, row.segments.count))
             for (index, fragments) in row.segments.enumerated() {
                 let texts = fragments.map { words in
-                    words.map { HebrewText.display($0.text, vowels: vowels, trope: trope) }.joined(separator: " ")
+                    words.map { HebrewText.display($0.text, vowels: vowels, trope: trope, verseEndings: false) }.joined(separator: " ")
                 }
                 let gap = fontSize * 1.6
                 let usable = max(1, columnWidth - gap * CGFloat(max(0, texts.count - 1)))

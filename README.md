@@ -28,6 +28,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 
 ## First milestone
 
+- Continuous flowing text across verse boundaries, with tappable words.
 - The site’s bundled Shlomo Stam Hebrew font in flowing text and word study.
 - A parchment-style Torah-column view with 42 source rows, justified text,
   section gaps, and amud navigation; switch back to flowing text at any time.
@@ -84,7 +85,10 @@ text with optional marks; full amudim can include adjacent parshiot. Text size a
 line-spacing settings apply to flowing text, while columns fit their available
 width. Word inspection is currently available in flowing text.
 
-The initial version preserves punctuation, extraordinary dots, and inverted nuns
+Torah columns always hide sof pasuq (the verse-ending colon), regardless of the
+vowel and trope settings. Flowing text retains verse punctuation.
+
+The initial version preserves extraordinary dots and inverted nuns
 when hiding marks. Meteg/silluq is hidden with trope, matching the web reader.
 A screen-size or marks change can reflow text; an exact reading-position anchor
 across reflow is not implemented yet.

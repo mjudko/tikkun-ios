@@ -55,25 +55,19 @@ struct ReaderView: View {
                                 .font(.caption).foregroundStyle(.secondary)
                             columnNavigation
                         } else {
-                        ForEach(passage.blocks) { block in
-                            VStack(alignment: .trailing, spacing: 12) {
-                                Text(attributedWords(block))
-                                    .font(TorahFont.font(readingSize * scale))
-                                    .lineSpacing(readingSpacing)
-                                    .multilineTextAlignment(.leading)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .environment(\.layoutDirection, .rightToLeft)
-                                    .tint(.primary)
-                                    .environment(\.openURL, OpenURLAction { url in
-                                        guard url.scheme == "tikkun", let index = Int(url.lastPathComponent),
-                                              block.words.indices.contains(index) else { return .discarded }
-                                        inspected = InspectedWord(word: block.words[index])
-                                        return .handled
-                                    })
-                                Divider().opacity(0.55)
-                            }
-                            .id(block.id)
-                        }
+                            Text(attributedWords(flowingWords))
+                                .font(TorahFont.font(readingSize * scale))
+                                .lineSpacing(readingSpacing)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .environment(\.layoutDirection, .rightToLeft)
+                                .tint(.primary)
+                                .environment(\.openURL, OpenURLAction { url in
+                                    guard url.scheme == "tikkun", let index = Int(url.lastPathComponent),
+                                          flowingWords.indices.contains(index) else { return .discarded }
+                                    inspected = InspectedWord(word: flowingWords[index])
+                                    return .handled
+                                })
                         }
                         passageNavigation
                     }
@@ -164,9 +158,11 @@ struct ReaderView: View {
         .accessibilityHint("Double tap to \(isOn.wrappedValue ? "hide" : "show") \(title.lowercased())")
     }
 
-    private func attributedWords(_ block: ReadingBlock) -> AttributedString {
+    private var flowingWords: [ReadingWord] { passage.blocks.flatMap(\.words) }
+
+    private func attributedWords(_ words: [ReadingWord]) -> AttributedString {
         var result = AttributedString()
-        for (index, word) in block.words.enumerated() {
+        for (index, word) in words.enumerated() {
             if index > 0 { result.append(AttributedString(" ")) }
             var text = AttributedString(HebrewText.display(word.text, vowels: vowels, trope: trope))
             text.link = URL(string: "tikkun://word/\(index)")
