@@ -1,0 +1,247 @@
+import SwiftUI
+
+private enum ReaderSheet: String, Identifiable {
+    case passages, settings
+    var id: String { rawValue }
+}
+
+private struct InspectedWord: Identifiable {
+    let id = UUID()
+    let word: ReadingWord
+}
+
+struct ReaderView: View {
+    let passages: [Passage]
+    @AppStorage("selectedPassage") private var selectedID = "bereshit"
+    @AppStorage("showVowels") private var vowels = true
+    @AppStorage("showTrope") private var trope = true
+    @AppStorage("readingSize") private var readingSize = 30.0
+    @AppStorage("readingSpacing") private var readingSpacing = 12.0
+    @State private var sheet: ReaderSheet?
+    @State private var inspected: InspectedWord?
+    @ScaledMetric(relativeTo: .title) private var scale = 1.0
+
+    private var passage: Passage { passages.first { $0.id == selectedID } ?? passages[0] }
+    private var passageIndex: Int { passages.firstIndex { $0.id == passage.id } ?? 0 }
+
+    var body: some View {
+        NavigationStack {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 28) {
+                        header.id("top")
+                        ForEach(passage.blocks) { block in
+                            VStack(alignment: .trailing, spacing: 12) {
+                                Text(attributedWords(block))
+                                    .font(.system(size: readingSize * scale, weight: .regular, design: .serif))
+                                    .lineSpacing(readingSpacing)
+                                    .multilineTextAlignment(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .environment(\.layoutDirection, .rightToLeft)
+                                    .tint(.primary)
+                                    .environment(\.openURL, OpenURLAction { url in
+                                        guard url.scheme == "tikkun", let index = Int(url.lastPathComponent),
+                                              block.words.indices.contains(index) else { return .discarded }
+                                        inspected = InspectedWord(word: block.words[index])
+                                        return .handled
+                                    })
+                                Divider().opacity(0.55)
+                            }
+                            .id(block.id)
+                        }
+                        passageNavigation
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 24)
+                    .frame(maxWidth: 720)
+                    .frame(maxWidth: .infinity)
+                }
+                .onChange(of: selectedID) { _, _ in proxy.scrollTo("top", anchor: .top) }
+                .background(Color(.systemGroupedBackground))
+                .safeAreaInset(edge: .bottom, spacing: 0) { practiceBar }
+            }
+            .navigationTitle("Tikkun")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { sheet = .passages } label: { Label("Choose passage", systemImage: "books.vertical") }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { sheet = .settings } label: { Label("Reading settings", systemImage: "textformat.size") }
+                }
+            }
+            .sheet(item: $sheet) { destination in
+                switch destination {
+                case .passages: passagePicker
+                case .settings: settings
+                }
+            }
+            .sheet(item: $inspected) { item in WordDetailView(word: item.word) }
+        }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("LEARN AT YOUR OWN PACE")
+                .font(.caption.weight(.semibold)).tracking(1.5).foregroundStyle(.secondary)
+            HStack(alignment: .firstTextBaseline) {
+                Text(passage.name).font(.largeTitle.weight(.semibold))
+                Spacer()
+                Text(passage.hebrew).font(.title2).environment(\.layoutDirection, .rightToLeft)
+            }
+            Text(passage.bookName).font(.subheadline).foregroundStyle(.secondary)
+            Text("Read with the marks, then hide them to practice. Tap a word to take a closer look.")
+                .font(.subheadline).foregroundStyle(.secondary).padding(.top, 4)
+        }
+        .padding(.bottom, 8)
+    }
+
+    private var practiceBar: some View {
+        HStack(spacing: 12) {
+            practiceButton("Vowels", hebrew: "אָ", isOn: $vowels)
+            practiceButton("Trope", hebrew: "א֑", isOn: $trope)
+        }
+        .padding(.horizontal, 24).padding(.vertical, 12)
+        .background(.regularMaterial)
+    }
+
+    private func practiceButton(_ title: String, hebrew: String, isOn: Binding<Bool>) -> some View {
+        Button { isOn.wrappedValue.toggle() } label: {
+            HStack {
+                Text(hebrew).font(.title3)
+                Text(title).font(.subheadline.weight(.medium))
+                Spacer(minLength: 4)
+                Image(systemName: isOn.wrappedValue ? "checkmark.circle.fill" : "circle")
+            }
+            .padding(.horizontal, 14).frame(minHeight: 48)
+            .background(isOn.wrappedValue ? Color.accentColor.opacity(0.12) : Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
+        .accessibilityValue(isOn.wrappedValue ? "Shown" : "Hidden")
+        .accessibilityHint("Double tap to \(isOn.wrappedValue ? "hide" : "show") \(title.lowercased())")
+    }
+
+    private func attributedWords(_ block: ReadingBlock) -> AttributedString {
+        var result = AttributedString()
+        for (index, word) in block.words.enumerated() {
+            if index > 0 { result.append(AttributedString(" ")) }
+            var text = AttributedString(HebrewText.display(word.text, vowels: vowels, trope: trope))
+            text.link = URL(string: "tikkun://word/\(index)")
+            text.foregroundColor = .primary
+            result.append(text)
+        }
+        return result
+    }
+
+    private var passageNavigation: some View {
+        HStack {
+            Button("Previous parsha", systemImage: "chevron.left") { selectedID = passages[passageIndex - 1].id }
+                .disabled(passageIndex == 0)
+            Spacer()
+            Button("Next parsha", systemImage: "chevron.right") { selectedID = passages[passageIndex + 1].id }
+                .disabled(passageIndex == passages.count - 1)
+        }
+        .font(.subheadline).padding(.vertical, 12)
+    }
+
+    private var passagePicker: some View {
+        PassagePicker(passages: passages, selectedID: $selectedID)
+    }
+
+    private var settings: some View {
+        NavigationStack {
+            Form {
+                Section("Text size") {
+                    Slider(value: $readingSize, in: 22...46, step: 2) { Text("Text size") }
+                    Text("\(Int(readingSize)) pt, adjusted for your device’s text-size setting")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Section("Line spacing") {
+                    Slider(value: $readingSpacing, in: 4...24, step: 2) { Text("Line spacing") }
+                }
+                Section("Preview") {
+                    Text(HebrewText.display("בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים", vowels: vowels, trope: trope))
+                        .font(.system(size: readingSize * scale, design: .serif))
+                        .lineSpacing(readingSpacing).frame(maxWidth: .infinity, alignment: .trailing)
+                        .environment(\.layoutDirection, .rightToLeft)
+                }
+            }
+            .navigationTitle("Reading settings").navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { sheet = nil } } }
+        }
+        .presentationDetents([.medium, .large])
+    }
+}
+
+private struct PassagePicker: View {
+    let passages: [Passage]
+    @Binding var selectedID: String
+    @State private var query = ""
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(1...5, id: \.self) { book in
+                    let matching = passages.filter {
+                        $0.book == book && (query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) || $0.hebrew.contains(query))
+                    }
+                    if let first = matching.first {
+                        Section(first.bookName) {
+                            ForEach(matching) { passage in
+                                Button {
+                                    selectedID = passage.id
+                                    dismiss()
+                                } label: {
+                                    HStack {
+                                        Text(passage.name).foregroundStyle(.primary)
+                                        Spacer()
+                                        Text(passage.hebrew).foregroundStyle(.secondary)
+                                        if selectedID == passage.id { Image(systemName: "checkmark").accessibilityLabel("Selected") }
+                                    }.frame(minHeight: 32)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .searchable(text: $query, prompt: "Find a parsha")
+            .navigationTitle("Choose a passage")
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+    }
+}
+
+private struct WordDetailView: View {
+    let word: ReadingWord
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    Text(word.text).font(.system(size: 48, design: .serif))
+                        .environment(\.layoutDirection, .rightToLeft)
+                        .padding(.top, 28)
+                    Text("With vowels and trope").font(.subheadline).foregroundStyle(.secondary)
+                    if let qeri = word.qeri, let ketiv = word.ketiv {
+                        VStack(spacing: 12) {
+                            Text("Qeri · read aloud").font(.caption).foregroundStyle(.secondary)
+                            Text(qeri).font(.largeTitle)
+                            Text("Ketiv · written in the scroll").font(.caption).foregroundStyle(.secondary)
+                            Text(ketiv).font(.largeTitle)
+                        }
+                    }
+                    Text("Without marks").font(.caption).foregroundStyle(.secondary)
+                    Text(HebrewText.display(word.text, vowels: false, trope: false))
+                        .font(.system(size: 40, design: .serif))
+                        .environment(\.layoutDirection, .rightToLeft)
+                }.padding(24).frame(maxWidth: .infinity)
+            }
+            .navigationTitle("Word study").navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .presentationDetents([.medium, .large])
+    }
+}

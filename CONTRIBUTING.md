@@ -1,12 +1,11 @@
 # Working agreement
 
-- Treat this checkout as the source of truth for future edits.
-- Keep each user-requested change in its own commit.
-- Before committing, run the smallest relevant checks; for functional changes,
-  prefer `npm test` and `npm run lint`.
-- Use clear imperative commit messages, such as `Fix parsha boundary spacing`.
-- Do not commit `node_modules`, build output, local runtime directories, `.env`
-  files, or credentials; the existing `.gitignore` covers these generated and
-  private files.
-- Publishing to the hosted Sites deployment is a separate step and should only
-  happen when requested.
+- Work in this independent SwiftUI repository; do not modify the sibling web app
+  unless the user requests it.
+- Learning mode and readable reflowable Hebrew take priority over print fidelity.
+- Keep each coherent user-requested milestone in its own commit.
+- Before committing, run the relevant Swift tests and an iOS simulator build.
+- When changing corpus conversion, regenerate data and verify source checksums,
+  passage boundaries, and qeri/ketiv preservation.
+- Keep generated build output, signing credentials, and local Xcode state out of Git.
+- Publishing, App Store submission, and remote repository creation are separate steps.
