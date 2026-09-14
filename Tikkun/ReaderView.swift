@@ -164,7 +164,7 @@ struct ReaderView: View {
         var result = AttributedString()
         for (index, word) in words.enumerated() {
             if index > 0 { result.append(AttributedString(" ")) }
-            var text = AttributedString(HebrewText.display(word.text, vowels: vowels, trope: trope))
+            var text = AttributedString(HebrewText.display(word.text, vowels: vowels, trope: trope, verseEndings: false))
             text.link = URL(string: "tikkun://word/\(index)")
             text.foregroundColor = .primary
             result.append(text)

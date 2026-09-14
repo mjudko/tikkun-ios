@@ -85,8 +85,8 @@ text with optional marks; full amudim can include adjacent parshiot. Text size a
 line-spacing settings apply to flowing text, while columns fit their available
 width. Word inspection is currently available in flowing text.
 
-Torah columns always hide sof pasuq (the verse-ending colon), regardless of the
-vowel and trope settings. Flowing text retains verse punctuation.
+Both Torah columns and flowing text always hide sof pasuq (the verse-ending
+colon), regardless of the vowel and trope settings.
 
 The initial version preserves extraordinary dots and inverted nuns
 when hiding marks. Meteg/silluq is hidden with trope, matching the web reader.
