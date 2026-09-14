@@ -12,11 +12,14 @@ private struct InspectedWord: Identifiable {
 
 struct ReaderView: View {
     let passages: [Passage]
+    let columns: [TorahColumn]
     @AppStorage("selectedPassage") private var selectedID = "bereshit"
     @AppStorage("showVowels") private var vowels = true
     @AppStorage("showTrope") private var trope = true
     @AppStorage("readingSize") private var readingSize = 30.0
     @AppStorage("readingSpacing") private var readingSpacing = 12.0
+    @AppStorage("torahColumnLayout") private var columnLayout = true
+    @State private var columnOffset = 0
     @State private var sheet: ReaderSheet?
     @State private var inspected: InspectedWord?
     @ScaledMetric(relativeTo: .title) private var scale = 1.0
@@ -24,16 +27,38 @@ struct ReaderView: View {
     private var passage: Passage { passages.first { $0.id == selectedID } ?? passages[0] }
     private var passageIndex: Int { passages.firstIndex { $0.id == passage.id } ?? 0 }
 
+    private var passageColumns: [TorahColumn] {
+        let first = passage.blocks.first?.amud ?? 1
+        let last = passage.blocks.last?.amud ?? first
+        return columns.filter { (first...last).contains($0.id) }
+    }
+    private var activeColumn: TorahColumn? {
+        guard !passageColumns.isEmpty else { return nil }
+        return passageColumns[min(columnOffset, passageColumns.count - 1)]
+    }
+
     var body: some View {
         NavigationStack {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 28) {
                         header.id("top")
+                        Picker("Reading layout", selection: $columnLayout) {
+                            Text("Torah column").tag(true)
+                            Text("Flowing text").tag(false)
+                        }
+                        .pickerStyle(.segmented)
+                        if columnLayout, let activeColumn {
+                            columnNavigation
+                            TorahColumnView(column: activeColumn, vowels: vowels, trope: trope)
+                            Text("Full amud · may include text from an adjacent parsha. Marks follow your practice settings.")
+                                .font(.caption).foregroundStyle(.secondary)
+                            columnNavigation
+                        } else {
                         ForEach(passage.blocks) { block in
                             VStack(alignment: .trailing, spacing: 12) {
                                 Text(attributedWords(block))
-                                    .font(.system(size: readingSize * scale, weight: .regular, design: .serif))
+                                    .font(TorahFont.font(readingSize * scale))
                                     .lineSpacing(readingSpacing)
                                     .multilineTextAlignment(.leading)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -49,6 +74,7 @@ struct ReaderView: View {
                             }
                             .id(block.id)
                         }
+                        }
                         passageNavigation
                     }
                     .padding(.horizontal, 24)
@@ -56,7 +82,8 @@ struct ReaderView: View {
                     .frame(maxWidth: 720)
                     .frame(maxWidth: .infinity)
                 }
-                .onChange(of: selectedID) { _, _ in proxy.scrollTo("top", anchor: .top) }
+                .onChange(of: selectedID) { _, _ in columnOffset = 0; proxy.scrollTo("top", anchor: .top) }
+                .onChange(of: columnOffset) { _, _ in proxy.scrollTo("top", anchor: .top) }
                 .background(Color(.systemGroupedBackground))
                 .safeAreaInset(edge: .bottom, spacing: 0) { practiceBar }
             }
@@ -90,10 +117,25 @@ struct ReaderView: View {
                 Text(passage.hebrew).font(.title2).environment(\.layoutDirection, .rightToLeft)
             }
             Text(passage.bookName).font(.subheadline).foregroundStyle(.secondary)
-            Text("Read with the marks, then hide them to practice. Tap a word to take a closer look.")
+            Text(columnLayout ? "Practice from a Torah-style column. Show or hide the marks as you learn." : "Read with the marks, then hide them to practice. Tap a word to take a closer look.")
                 .font(.subheadline).foregroundStyle(.secondary).padding(.top, 4)
         }
         .padding(.bottom, 8)
+    }
+
+    private var columnNavigation: some View {
+        HStack {
+            Button { columnOffset = max(0, columnOffset - 1) } label: {
+                Label("Previous amud", systemImage: "chevron.left").labelStyle(.iconOnly)
+            }.disabled(columnOffset == 0).frame(minWidth: 44, minHeight: 44)
+            Spacer()
+            Text("Amud \(activeColumn?.id ?? 1) · \(columnOffset + 1) of \(passageColumns.count)")
+                .font(.subheadline).monospacedDigit()
+            Spacer()
+            Button { columnOffset = min(passageColumns.count - 1, columnOffset + 1) } label: {
+                Label("Next amud", systemImage: "chevron.right").labelStyle(.iconOnly)
+            }.disabled(columnOffset >= passageColumns.count - 1).frame(minWidth: 44, minHeight: 44)
+        }
     }
 
     private var practiceBar: some View {
@@ -152,17 +194,17 @@ struct ReaderView: View {
     private var settings: some View {
         NavigationStack {
             Form {
-                Section("Text size") {
+                Section("Flowing text size") {
                     Slider(value: $readingSize, in: 22...46, step: 2) { Text("Text size") }
                     Text("\(Int(readingSize)) pt, adjusted for your device’s text-size setting")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                Section("Line spacing") {
+                Section("Flowing text spacing") {
                     Slider(value: $readingSpacing, in: 4...24, step: 2) { Text("Line spacing") }
                 }
                 Section("Preview") {
                     Text(HebrewText.display("בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים", vowels: vowels, trope: trope))
-                        .font(.system(size: readingSize * scale, design: .serif))
+                        .font(TorahFont.font(readingSize * scale))
                         .lineSpacing(readingSpacing).frame(maxWidth: .infinity, alignment: .trailing)
                         .environment(\.layoutDirection, .rightToLeft)
                 }
@@ -221,7 +263,7 @@ private struct WordDetailView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    Text(word.text).font(.system(size: 48, design: .serif))
+                    Text(word.text).font(TorahFont.font(48))
                         .environment(\.layoutDirection, .rightToLeft)
                         .padding(.top, 28)
                     Text("With vowels and trope").font(.subheadline).foregroundStyle(.secondary)
@@ -235,7 +277,7 @@ private struct WordDetailView: View {
                     }
                     Text("Without marks").font(.caption).foregroundStyle(.secondary)
                     Text(HebrewText.display(word.text, vowels: false, trope: false))
-                        .font(.system(size: 40, design: .serif))
+                        .font(TorahFont.font(40))
                         .environment(\.layoutDirection, .rightToLeft)
                 }.padding(24).frame(maxWidth: .infinity)
             }

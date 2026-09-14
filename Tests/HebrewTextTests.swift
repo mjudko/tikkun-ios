@@ -29,4 +29,18 @@ final class HebrewTextTests: XCTestCase {
         XCTAssertEqual(passages.last?.blocks.last?.words.last?.text, "כׇּל־יִשְׂרָאֵֽל׃")
         XCTAssertTrue(passages.allSatisfy { !$0.blocks.isEmpty })
     }
+    func testColumnsPreserveAllReadingWordsAndFortyTwoRows() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        let resources = root.appendingPathComponent("Tikkun/Resources")
+        let decoder = JSONDecoder()
+        let columns = try decoder.decode([TorahColumn].self, from: Data(contentsOf: resources.appendingPathComponent("torah-columns.json")))
+        let passages = try decoder.decode([Passage].self, from: Data(contentsOf: resources.appendingPathComponent("learning-corpus.json")))
+        XCTAssertEqual(columns.map(\.id), Array(1...245))
+        XCTAssertTrue(columns.allSatisfy { $0.rows.count == 42 })
+        let columnWords = columns.flatMap(\.rows).flatMap(\.segments).flatMap { $0 }.flatMap { $0 }
+        XCTAssertEqual(columnWords, passages.flatMap(\.blocks).flatMap(\.words))
+        XCTAssertTrue(columns[77].rows[5].segments.isEmpty)
+        XCTAssertTrue(columns[77].rows[36].segments.isEmpty)
+        XCTAssertTrue(columns[241].rows.contains { $0.segments.count > 1 })
+    }
 }

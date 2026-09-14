@@ -44,6 +44,22 @@ def generate():
         for line, row in enumerate(json.loads(raw), 1):
             positions[(page, line)] = len(rows)
             rows.append((page, row))
+    columns = []
+    for page in range(1, 246):
+        source_rows = json.loads((SOURCE / f'torah/{page}.json').read_text())
+        normalized = [{'segments': [[list(words(fragment)) for fragment in flatten(column)] for column in row['text']],
+                       'petucha': bool(row.get('isPetucha')) or '#(פ)' in str(row['text'])}
+                      for row in source_rows]
+        blank = lambda row: not any(word for col in row['segments'] for segment in col for word in segment)
+        if page in [61, 111, 148, 200] and len(normalized) == 43:
+            start = next(i for i in range(len(normalized)-4) if all(blank(r) for r in normalized[i:i+5]))
+            del normalized[start+4]
+        if page == 78 and len(normalized) == 40:
+            normalized.insert(5, {'segments': [], 'petucha': False})
+            normalized.insert(36, {'segments': [], 'petucha': False})
+        assert len(normalized) == 42, (page, len(normalized))
+        columns.append({'id': page, 'rows': normalized})
+    (ROOT / 'Tikkun/Resources/torah-columns.json').write_text(json.dumps(columns, ensure_ascii=False, separators=(',', ':')) + '\n')
     catalog = (SOURCE / 'catalog.ts').read_text().split('export const parshiot: Parsha[] = [')[1].split('];')[0]
     pattern = r'slug: "([^"]+)", hebrew: "([^"]+)", english: "([^"]+)", book: (\d+), page: (\d+), line: (\d+), verses: (\d+)'
     entries = list(re.finditer(pattern, catalog))

@@ -28,7 +28,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 
 ## First milestone
 
-- Reflowable, right-to-left Hebrew text using native system typography.
+- The site’s bundled Shlomo Stam Hebrew font in flowing text and word study.
+- A parchment-style Torah-column view with 42 source rows, justified text,
+  section gaps, and amud navigation; switch back to flowing text at any time.
 - Searchable selection of all 54 parshiot, grouped by book.
 - Independent vowel and trope practice controls.
 - Tap a word to inspect its marked/unmarked forms and qeri/ketiv, where present.
@@ -39,6 +41,8 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 ## Structure
 
 - `Tikkun/ReaderView.swift`: reading screen, passage picker, settings, word study.
+- `Tikkun/TorahColumnView.swift`: native Core Text column shaping and drawing.
+- `Tikkun/TorahFont.swift`: registration of the site’s bundled Hebrew font.
 - `Tikkun/Core/ReadingModels.swift`: data models and Hebrew mark filtering.
 - `Tikkun/Resources/learning-corpus.json`: generated reading data bundled in the app.
 - `SourceData/`: original Torah snapshot, manifest, license, and parsha catalog.
@@ -70,8 +74,15 @@ mapping needs a separate audit before verse-range selection is added.
 - Aliyah and verse-range selection with verified boundaries.
 - Named cantillation explanations and richer word study.
 - Saved reading position, bookmarks, and rehearsal progress.
-- Optional Torah-layout mode; the original data remains available for this.
+- Column zoom and richer interaction within the fixed-row view.
 - Device/VoiceOver testing, app icon, and distribution setup.
+
+The column view preserves source line breaks and uses native word-space
+justification. It is not a pixel-for-pixel reproduction of the site’s experimental
+letter stretching or special poetry fitting. It displays the read-aloud (qeri)
+text with optional marks; full amudim can include adjacent parshiot. Text size and
+line-spacing settings apply to flowing text, while columns fit their available
+width. Word inspection is currently available in flowing text.
 
 The initial version preserves punctuation, extraordinary dots, and inverted nuns
 when hiding marks. Meteg/silluq is hidden with trope, matching the web reader.

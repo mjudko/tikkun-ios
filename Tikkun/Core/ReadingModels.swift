@@ -38,3 +38,14 @@ enum HebrewText {
         return String(String.UnicodeScalarView(scalars)).precomposedStringWithCanonicalMapping
     }
 }
+
+struct TorahColumn: Codable, Identifiable, Sendable {
+    let id: Int
+    let rows: [TorahRow]
+}
+
+struct TorahRow: Codable, Sendable {
+    /// Source columns, section fragments, then words. Retains internal gaps.
+    let segments: [[[ReadingWord]]]
+    let petucha: Bool
+}

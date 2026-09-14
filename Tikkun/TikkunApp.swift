@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct TikkunApp: App {
+    init() { TorahFont.register() }
+
     var body: some Scene {
         WindowGroup { LibraryView() }
     }
@@ -9,6 +11,7 @@ struct TikkunApp: App {
 
 struct LibraryView: View {
     @State private var passages: [Passage] = []
+    @State private var columns: [TorahColumn] = []
     @State private var errorMessage: String?
 
     var body: some View {
@@ -18,7 +21,7 @@ struct LibraryView: View {
             } else if passages.isEmpty {
                 ProgressView("Opening your reader…")
             } else {
-                ReaderView(passages: passages)
+                ReaderView(passages: passages, columns: columns)
             }
         }
         .task {
@@ -27,6 +30,12 @@ struct LibraryView: View {
                 guard let url = Bundle.main.url(forResource: "learning-corpus", withExtension: "json") else {
                     throw CocoaError(.fileNoSuchFile)
                 }
+                guard let columnsURL = Bundle.main.url(forResource: "torah-columns", withExtension: "json") else {
+                    throw CocoaError(.fileNoSuchFile)
+                }
+                columns = try await Task.detached(priority: .userInitiated) {
+                    try JSONDecoder().decode([TorahColumn].self, from: Data(contentsOf: columnsURL))
+                }.value
                 passages = try await Task.detached(priority: .userInitiated) {
                     try JSONDecoder().decode([Passage].self, from: Data(contentsOf: url))
                 }.value
