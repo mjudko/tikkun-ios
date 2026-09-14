@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-08-13",
+  "pagesChecked": 245,
+  "physicalRowsChecked": 10290,
+  "textRowsChecked": 10270,
+  "blankRows": 20,
+  "petuchot": 290,
+  "setumot": 379,
+  "shiratHayamLines": 30,
+  "haazinuLines": 70,
+  "qeriKetiv": 33,
+  "puncta": 32,
+  "invertedNuns": 2,
+  "findings": []
+}
