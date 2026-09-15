@@ -54,4 +54,20 @@ final class HebrewTextTests: XCTestCase {
         XCTAssertTrue(columns[77].rows[36].segments.isEmpty)
         XCTAssertTrue(columns[241].rows.contains { $0.segments.count > 1 })
     }
+    func testSectionBreaksKeepNaturalTextAndPutExtraSpaceInTheGap() {
+        let closed = SectionLineLayout(widths: [60, 80], availableWidth: 300, minimumGap: 60, openEnding: false)
+        XCTAssertEqual(closed.scale, 1)
+        XCTAssertEqual(closed.offsetsFromRight.first, 0)
+        XCTAssertEqual(closed.offsetsFromRight[1] + 80, 300)
+        XCTAssertGreaterThanOrEqual(closed.offsetsFromRight[1] - 60, 60)
+        let open = SectionLineLayout(widths: [100], availableWidth: 300, minimumGap: 60, openEnding: true)
+        XCTAssertEqual(open.scale, 1)
+        XCTAssertEqual(open.offsetsFromRight, [0])
+        let crowded = SectionLineLayout(widths: [150, 150], availableWidth: 300, minimumGap: 60, openEnding: false)
+        XCTAssertLessThan(crowded.scale, 1)
+        XCTAssertEqual(crowded.offsetsFromRight[1] + 150 * crowded.scale, 300, accuracy: 0.001)
+        XCTAssertGreaterThan(crowded.offsetsFromRight[1] - 150 * crowded.scale, 0)
+        let leadingGap = SectionLineLayout(widths: [0, 80], availableWidth: 300, minimumGap: 60, openEnding: false)
+        XCTAssertEqual(leadingGap.offsetsFromRight[1], 220)
+    }
 }

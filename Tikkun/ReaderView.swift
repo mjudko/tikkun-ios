@@ -55,19 +55,10 @@ struct ReaderView: View {
                                 .font(.caption).foregroundStyle(.secondary)
                             columnNavigation
                         } else {
-                            Text(attributedWords(flowingWords))
-                                .font(TorahFont.font(readingSize * scale))
-                                .lineSpacing(readingSpacing)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .environment(\.layoutDirection, .rightToLeft)
-                                .tint(.primary)
-                                .environment(\.openURL, OpenURLAction { url in
-                                    guard url.scheme == "tikkun", let index = Int(url.lastPathComponent),
-                                          flowingWords.indices.contains(index) else { return .discarded }
-                                    inspected = InspectedWord(word: flowingWords[index])
-                                    return .handled
-                                })
+                            FlowingTextView(words: flowingWords, fontSize: readingSize * scale,
+                                            lineSpacing: readingSpacing, vowels: vowels, trope: trope) { word in
+                                inspected = InspectedWord(word: word)
+                            }
                         }
                         passageNavigation
                     }
@@ -159,18 +150,6 @@ struct ReaderView: View {
     }
 
     private var flowingWords: [ReadingWord] { passage.blocks.flatMap(\.words) }
-
-    private func attributedWords(_ words: [ReadingWord]) -> AttributedString {
-        var result = AttributedString()
-        for (index, word) in words.enumerated() {
-            if index > 0 { result.append(AttributedString(" ")) }
-            var text = AttributedString(HebrewText.display(word.text, vowels: vowels, trope: trope, verseEndings: false))
-            text.link = URL(string: "tikkun://word/\(index)")
-            text.foregroundColor = .primary
-            result.append(text)
-        }
-        return result
-    }
 
     private var passageNavigation: some View {
         HStack {

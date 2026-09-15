@@ -67,6 +67,26 @@ private final class ColumnInkView: UIView {
                 let texts = fragments.map { words in
                     words.map { HebrewText.display($0.text, vowels: vowels, trope: trope, verseEndings: false) }.joined(separator: " ")
                 }
+                let isPoetry = (column.id == 78 && (6...35).contains(rowIndex)) ||
+                    (column.id == 242 && rowIndex >= 7) || (column.id == 243 && rowIndex < 35)
+                let isLastText = column.id == 245 && rowIndex == column.rows.lastIndex(where: {
+                    !$0.segments.flatMap { $0 }.flatMap { $0 }.isEmpty
+                })
+                if !isPoetry && (texts.count > 1 || row.petucha || isLastText) {
+                    let naturalWidths = texts.map { width(line($0, size: fontSize)) }
+                    let placement = SectionLineLayout(widths: naturalWidths.map(Double.init),
+                        availableWidth: Double(columnWidth), minimumGap: Double(fontSize * 5.95),
+                        openEnding: row.petucha || isLastText)
+                    let right = bounds.width - CGFloat(index) * (columnWidth + columnGap)
+                    for (fragmentIndex, text) in texts.enumerated() where !text.isEmpty {
+                        let rendered = line(text, size: fontSize * placement.scale)
+                        context.textPosition = CGPoint(
+                            x: right - placement.offsetsFromRight[fragmentIndex] - width(rendered),
+                            y: bounds.height - CGFloat(rowIndex) * rowHeight - rowHeight * 0.72)
+                        CTLineDraw(rendered, context)
+                    }
+                    continue
+                }
                 let gap = fontSize * 1.6
                 let usable = max(1, columnWidth - gap * CGFloat(max(0, texts.count - 1)))
                 let naturalWidths = texts.map { width(line($0, size: fontSize)) }
