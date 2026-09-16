@@ -104,6 +104,7 @@ struct ReaderView: View {
                 Text(passage.hebrew).font(.title2).environment(\.layoutDirection, .rightToLeft)
             }
             Text(passage.bookName).font(.subheadline).foregroundStyle(.secondary)
+            Text(passage.lengthSummary).font(.subheadline).foregroundStyle(.secondary)
             Text(columnLayout ? "Practice from a Torah-style column. Show or hide the marks as you learn." : "Read with the marks, then hide them to practice. Tap a word to take a closer look.")
                 .font(.subheadline).foregroundStyle(.secondary).padding(.top, 4)
         }
@@ -214,7 +215,10 @@ private struct PassagePicker: View {
                                     dismiss()
                                 } label: {
                                     HStack {
-                                        Text(passage.name).foregroundStyle(.primary)
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(passage.name).foregroundStyle(.primary)
+                                            Text(passage.lengthSummary).font(.caption).foregroundStyle(.secondary)
+                                        }
                                         Spacer()
                                         Text(passage.hebrew).foregroundStyle(.secondary)
                                         if selectedID == passage.id { Image(systemName: "checkmark").accessibilityLabel("Selected") }

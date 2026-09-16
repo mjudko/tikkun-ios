@@ -31,6 +31,13 @@ final class HebrewTextTests: XCTestCase {
         let data = try Data(contentsOf: root.appendingPathComponent("Tikkun/Resources/learning-corpus.json"))
         let passages = try JSONDecoder().decode([Passage].self, from: data)
         XCTAssertEqual(passages.count, 54)
+        XCTAssertEqual(passages.first?.verseCount, 146)
+        XCTAssertEqual(passages.first!.approximateColumns, 5 + 31.0 / 42, accuracy: 0.0001)
+        XCTAssertEqual(passages.last?.verseCount, 41)
+        XCTAssertEqual(passages.last!.approximateColumns, 70.0 / 42, accuracy: 0.0001)
+        XCTAssertTrue(passages.allSatisfy { $0.verseCount > 0 && $0.approximateColumns > 0 })
+        // Yitro has alternate accentuation; block count is not its pasuk count.
+        XCTAssertEqual(passages.first { $0.id == "yitro" }?.verseCount, 72)
         XCTAssertEqual(Set(passages.map(\.id)).count, 54)
         let words = passages.flatMap(\.blocks).flatMap(\.words)
         XCTAssertEqual(words.filter { $0.qeri != nil }.count, 33)

@@ -18,6 +18,12 @@ struct Passage: Codable, Identifiable, Sendable {
     let name: String
     let book: Int
     let blocks: [ReadingBlock]
+    let verseCount: Int
+    let approximateColumns: Double
+
+    var lengthSummary: String {
+        "\(verseCount) pesukim · ≈\(approximateColumns.formatted(.number.precision(.fractionLength(1)))) columns"
+    }
 
     var bookName: String {
         ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy"][max(0, min(4, book - 1))]

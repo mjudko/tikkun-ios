@@ -82,12 +82,16 @@ def generate():
                        if block['row'] >= positions[(int(m[5]), int(m[6]))]) for m in entries]
     passages = []
     for index, match in enumerate(entries):
-        slug, hebrew, english, book, page, line, _ = match.groups()
+        slug, hebrew, english, book, page, line, verse_count = match.groups()
         end = boundaries[index + 1] if index + 1 < len(entries) else len(all_blocks)
         blocks = [{'id': f'{slug}-{i}', 'amud': b['amud'], 'words': b['words']}
                   for i, b in enumerate(all_blocks[boundaries[index]:end])]
         assert blocks
-        passages.append({'id': slug, 'hebrew': hebrew, 'name': english, 'book': int(book), 'blocks': blocks})
+        next_entry = entries[index + 1] if index + 1 < len(entries) else None
+        start_line = (int(page) - 1) * 42 + int(line)
+        end_line = (int(next_entry[5]) - 1) * 42 + int(next_entry[6]) if next_entry else 245 * 42 + 1
+        approximate_columns = max(0.1, (end_line - start_line) / 42)
+        passages.append({'verseCount': int(verse_count), 'approximateColumns': approximate_columns, 'id': slug, 'hebrew': hebrew, 'name': english, 'book': int(book), 'blocks': blocks})
     actual_pairs = sum('qeri' in w for p in passages for b in p['blocks'] for w in b['words'])
     assert actual_pairs == manifest['qeriKetiv'], (actual_pairs, manifest['qeriKetiv'])
     output = ROOT / 'Tikkun/Resources/learning-corpus.json'
