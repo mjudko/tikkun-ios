@@ -1,11 +1,32 @@
 import SwiftUI
 
+enum ColorSchemeSelection: String, CaseIterable, Identifiable {
+    case system = "System"
+    case light = "Light"
+    case dark = "Dark"
+
+    var id: String { self.rawValue }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+}
+
 @main
 struct TikkunApp: App {
+    @AppStorage("colorSchemeSelection") private var colorSchemeSelection = ColorSchemeSelection.system
+
     init() { TorahFont.register() }
 
     var body: some Scene {
-        WindowGroup { LibraryView() }
+        WindowGroup {
+            LibraryView()
+                .preferredColorScheme(colorSchemeSelection.colorScheme)
+        }
     }
 }
 

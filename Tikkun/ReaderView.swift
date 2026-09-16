@@ -14,6 +14,8 @@ struct ReaderView: View {
     @AppStorage("readingSize") private var readingSize = 30.0
     @AppStorage("readingSpacing") private var readingSpacing = 12.0
     @AppStorage("torahColumnLayout") private var columnLayout = true
+    @AppStorage("colorSchemeSelection") private var colorSchemeSelection = ColorSchemeSelection.system
+    @Environment(\.colorScheme) private var colorScheme
     #if DEBUG
     @State private var columnOffset = max(0, UserDefaults.standard.integer(forKey: "previewColumnOffset"))
     #else
@@ -75,6 +77,14 @@ struct ReaderView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { sheet = .passages } label: { Label("Choose passage", systemImage: "books.vertical") }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        colorSchemeSelection = colorScheme == .dark ? .light : .dark
+                    } label: {
+                        Label(colorScheme == .dark ? "Use light mode" : "Use dark mode",
+                              systemImage: colorScheme == .dark ? "sun.max.fill" : "moon.fill")
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { sheet = .settings } label: { Label("Reading settings", systemImage: "textformat.size") }
