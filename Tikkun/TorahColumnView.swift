@@ -21,17 +21,17 @@ struct TorahColumnView: View {
             Rectangle().fill(Color.primary.opacity(0.12)).frame(height: 1)
             ColumnInk(column: column, vowels: vowels, trope: trope)
                 .aspectRatio(1 / 3.65, contentMode: .fit)
-                .padding(.trailing, displaysAliyahMarkers ? 24 : 0)
+                .padding(.horizontal, displaysAliyahMarkers ? 16 : 0)
                 .overlay {
                     if displaysAliyahMarkers {
                         GeometryReader { geometry in
                             ForEach(Array(column.rows.enumerated()), id: \.offset) { index, row in
                                 if let aliyah = row.aliyah {
                                     Text(AliyahLabel.compact(aliyah))
-                                        .font(.caption2.bold())
+                                        .font(.system(size: 8, weight: .semibold))
                                         .foregroundStyle(Color.brown)
-                                        .frame(width: 24)
-                                        .position(x: geometry.size.width - 12,
+                                        .frame(width: 16)
+                                        .position(x: geometry.size.width - 8,
                                                   y: (CGFloat(index) + 0.5) * geometry.size.height / 42)
                                         .accessibilityLabel("\(AliyahLabel.hebrew(aliyah)) aliyah")
                                 }
