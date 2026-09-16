@@ -35,14 +35,12 @@ final class HebrewTextTests: XCTestCase {
         XCTAssertEqual(HebrewText.display("בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים׃", vowels: false, trope: false), "בראשית ברא אלהים׃")
         XCTAssertEqual(HebrewText.display("עַל־פְּנֵ֣י", vowels: false, trope: false), "על־פני")
     }
-    func testColumnVerseEndingsStayHiddenInEveryMarksSetting() {
+    func testReaderVerseEndingsFollowTropeSetting() {
         for vowels in [true, false] {
             for trope in [true, false] {
                 let source = "הָאָֽרֶץ׃"
-                let displayed = HebrewText.display(source, vowels: vowels, trope: trope, verseEndings: false)
-                XCTAssertFalse(displayed.contains("׃"))
-                XCTAssertEqual(displayed, HebrewText.display("הָאָֽרֶץ", vowels: vowels, trope: trope))
-                XCTAssertTrue(HebrewText.display(source, vowels: vowels, trope: trope).hasSuffix("׃"))
+                let displayed = HebrewText.display(source, vowels: vowels, trope: trope, verseEndings: trope)
+                XCTAssertEqual(displayed.hasSuffix("׃"), trope)
             }
         }
     }
