@@ -61,7 +61,7 @@ struct ReaderView: View {
                         } else {
                             FlowingTextView(words: flowingWords, fontSize: readingSize * scale,
                                             lineSpacing: readingSpacing, vowels: vowels, trope: trope,
-                                            showAliyahMarkers: showAliyahMarkers)
+                                            showAliyahMarkers: showAliyahMarkers && trope)
                         }
                         passageNavigation.padding(.horizontal, columnLayout ? 24 : 0)
                     }
@@ -180,6 +180,8 @@ struct ReaderView: View {
             Form {
                 Section("Reader") {
                     Toggle("Aliyah markers", isOn: $showAliyahMarkers)
+                    Text("Aliyah markers appear while Trope is on.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
                 Section("Flowing text size") {
                     Slider(value: $readingSize, in: 22...46, step: 2) { Text("Text size") }

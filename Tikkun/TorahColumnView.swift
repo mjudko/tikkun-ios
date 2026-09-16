@@ -8,6 +8,8 @@ struct TorahColumnView: View {
     let showAliyahMarkers: Bool
     @Environment(\.colorScheme) private var colorScheme
 
+    private var displaysAliyahMarkers: Bool { showAliyahMarkers && trope }
+
     var body: some View {
         VStack(spacing: 16) {
             HStack {
@@ -19,9 +21,9 @@ struct TorahColumnView: View {
             Rectangle().fill(Color.primary.opacity(0.12)).frame(height: 1)
             ColumnInk(column: column, vowels: vowels, trope: trope)
                 .aspectRatio(1 / 3.65, contentMode: .fit)
-                .padding(.leading, showAliyahMarkers ? 24 : 0)
+                .padding(.trailing, displaysAliyahMarkers ? 24 : 0)
                 .overlay {
-                    if showAliyahMarkers {
+                    if displaysAliyahMarkers {
                         GeometryReader { geometry in
                             ForEach(Array(column.rows.enumerated()), id: \.offset) { index, row in
                                 if let aliyah = row.aliyah {
@@ -29,7 +31,8 @@ struct TorahColumnView: View {
                                         .font(.caption2.bold())
                                         .foregroundStyle(Color.brown)
                                         .frame(width: 24)
-                                        .position(x: 12, y: (CGFloat(index) + 0.5) * geometry.size.height / 42)
+                                        .position(x: geometry.size.width - 12,
+                                                  y: (CGFloat(index) + 0.5) * geometry.size.height / 42)
                                         .accessibilityLabel("\(AliyahLabel.hebrew(aliyah)) aliyah")
                                 }
                             }
