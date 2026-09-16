@@ -28,8 +28,8 @@ struct TorahColumnView: View {
                             ForEach(Array(column.rows.enumerated()), id: \.offset) { index, row in
                                 if let aliyah = row.aliyah {
                                     Text(AliyahLabel.compact(aliyah))
-                                        .font(.system(size: 6, weight: .semibold))
-                                        .foregroundStyle(Color(red: 0.08, green: 0.82, blue: 0.28))
+                                        .font(.system(size: 7, weight: .semibold))
+                                        .foregroundStyle(Color(red: 0.90, green: 0.10, blue: 0.12))
                                         .frame(width: 8)
                                         .position(x: geometry.size.width - 4,
                                                   y: (CGFloat(index) + 0.5) * geometry.size.height / 42)
