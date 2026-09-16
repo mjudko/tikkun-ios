@@ -42,27 +42,29 @@ struct ReaderView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 28) {
-                        header.id("top")
+                        header.padding(.horizontal, columnLayout ? 24 : 0).id("top")
                         Picker("Reading layout", selection: $columnLayout) {
                             Text("Torah column").tag(true)
                             Text("Flowing text").tag(false)
                         }
                         .pickerStyle(.segmented)
+                        .padding(.horizontal, columnLayout ? 24 : 0)
                         if columnLayout, let activeColumn {
-                            columnNavigation
+                            columnNavigation.padding(.horizontal, 24)
                             TorahColumnView(column: activeColumn, vowels: vowels, trope: trope)
                             Text("Full amud · may include text from an adjacent parsha. Marks follow your practice settings.")
                                 .font(.caption).foregroundStyle(.secondary)
-                            columnNavigation
+                                .padding(.horizontal, 24)
+                            columnNavigation.padding(.horizontal, 24)
                         } else {
                             FlowingTextView(words: flowingWords, fontSize: readingSize * scale,
                                             lineSpacing: readingSpacing, vowels: vowels, trope: trope) { word in
                                 inspected = InspectedWord(word: word)
                             }
                         }
-                        passageNavigation
+                        passageNavigation.padding(.horizontal, columnLayout ? 24 : 0)
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, columnLayout ? 0 : 24)
                     .padding(.vertical, 24)
                     .frame(maxWidth: 720)
                     .frame(maxWidth: .infinity)

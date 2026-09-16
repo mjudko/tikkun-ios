@@ -24,10 +24,8 @@ struct TorahColumnView: View {
                 }.joined(separator: " "))
             Text("\(column.id)").font(.caption).foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 22).padding(.vertical, 24)
+        .padding(.horizontal, 8).padding(.vertical, 20)
         .background(colorScheme == .dark ? Color(red: 0.19, green: 0.17, blue: 0.14) : Color(red: 0.98, green: 0.96, blue: 0.90))
-        .overlay(Rectangle().strokeBorder(Color.primary.opacity(0.14), lineWidth: 1))
-        .shadow(color: .black.opacity(0.08), radius: 12, y: 6)
     }
 }
 
