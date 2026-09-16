@@ -111,8 +111,6 @@ struct ReaderView: View {
             }
             Text(passage.bookName).font(.subheadline).foregroundStyle(.secondary)
             Text(passage.lengthSummary).font(.subheadline).foregroundStyle(.secondary)
-            Text(columnLayout ? "Practice from a Torah-style column. Show or hide the marks as you learn." : "Read with the marks, then hide them to practice.")
-                .font(.subheadline).foregroundStyle(.secondary).padding(.top, 4)
         }
         .padding(.bottom, 8)
     }
