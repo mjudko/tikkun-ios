@@ -96,8 +96,6 @@ struct ReaderView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("LEARN AT YOUR OWN PACE")
-                .font(.caption.weight(.semibold)).tracking(1.5).foregroundStyle(.secondary)
             HStack(alignment: .firstTextBaseline) {
                 Text(passage.name).font(.largeTitle.weight(.semibold))
                 Spacer()
