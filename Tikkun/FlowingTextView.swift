@@ -29,8 +29,8 @@ struct FlowingTextView: UIViewRepresentable {
         paragraph.lineSpacing = lineSpacing
         paragraph.hyphenationFactor = 0
         let displayed = words.map {
-            HebrewText.display($0.text, vowels: vowels, trope: trope, verseEndings: false)
-        }.joined(separator: " ")
+            HebrewText.display($0.readingText, vowels: vowels, trope: trope, verseEndings: false)
+        }.filter { !$0.isEmpty }.joined(separator: " ").replacingOccurrences(of: "־ ", with: "־")
         let text = NSMutableAttributedString(string: displayed)
         text.addAttributes([
             .font: UIFont(name: TorahFont.name, size: fontSize) ?? UIFont.systemFont(ofSize: fontSize),

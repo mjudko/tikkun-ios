@@ -4,6 +4,8 @@ struct ReadingWord: Codable, Equatable, Sendable {
     let text: String
     let ketiv: String?
     let qeri: String?
+    var upperReading: String? = nil
+    var readingText: String { upperReading ?? text }
 }
 
 struct ReadingBlock: Codable, Identifiable, Sendable {

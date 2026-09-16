@@ -97,3 +97,11 @@ Source: [Tikkun.io](https://github.com/akivajgordon/tikkun.io), pinned in the we
 project on 2026-08-13. See `SourceData/corpus-manifest.json` and
 `SourceData/tikkun-io-LICENSE.txt`. The source license is also bundled with the app.
 Original web source commit: `951fed6ade8b6dbad44972b90a7d3fcc8c0aa967`.
+
+### Taam elyon
+
+Both Decalogues display the printed taam elyon reading from Wikisource MAM.
+`SourceData/taam-elyon.json` records the text and provenance; the generator checks
+exact consonant alignment and reconstruction without changing the pinned source
+or ketiv/qeri metadata. Attribution and CC BY-SA 4.0 terms are bundled in
+`Tikkun/Resources/taam-elyon-NOTICE.txt`.

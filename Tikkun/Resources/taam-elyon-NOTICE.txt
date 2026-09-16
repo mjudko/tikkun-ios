@@ -1,0 +1,14 @@
+Taam elyon reading overlay
+
+Miqra according to the Masorah (MAM), printed tradition, Wikisource contributors.
+Retrieved September 15, 2026 from:
+https://he.wikisource.org/wiki/שמות_כ/טעמים
+https://he.wikisource.org/wiki/דברים_ה/טעמים
+
+Licensed under Creative Commons Attribution-ShareAlike 4.0:
+https://creativecommons.org/licenses/by-sa/4.0/
+
+Adaptation: whitespace normalized, Deuteronomy ketiv omitted from spoken reading,
+and reading aligned to the app's original source-word boundaries. Original
+ketiv/qeri metadata is retained separately. The overlay and adaptations of it
+are distributed under the same license.

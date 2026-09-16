@@ -20,8 +20,8 @@ struct TorahColumnView: View {
                 .aspectRatio(1 / 3.65, contentMode: .fit)
                 .accessibilityLabel("Amud \(column.id). Torah column with 42 lines.")
                 .accessibilityValue(column.rows.flatMap(\.segments).flatMap { $0 }.flatMap { $0 }.map {
-                    HebrewText.display($0.text, vowels: vowels, trope: trope, verseEndings: false)
-                }.joined(separator: " "))
+                    HebrewText.display($0.readingText, vowels: vowels, trope: trope, verseEndings: false)
+                }.filter { !$0.isEmpty }.joined(separator: " ").replacingOccurrences(of: "־ ", with: "־"))
             Text("\(column.id)").font(.caption).foregroundStyle(.secondary)
         }
         .padding(.horizontal, 8).padding(.vertical, 20)
@@ -63,7 +63,22 @@ private final class ColumnInkView: UIView {
             let columnWidth = (bounds.width - columnGap * CGFloat(max(0, row.segments.count - 1))) / CGFloat(max(1, row.segments.count))
             for (index, fragments) in row.segments.enumerated() {
                 let texts = fragments.map { words in
-                    words.map { HebrewText.display($0.text, vowels: vowels, trope: trope, verseEndings: false) }.joined(separator: " ")
+                    words.map { HebrewText.display($0.readingText, vowels: vowels, trope: trope, verseEndings: false) }.filter { !$0.isEmpty }.joined(separator: " ").replacingOccurrences(of: "־ ", with: "־")
+                }
+                if column.id == 78 && (6...35).contains(rowIndex) {
+                    let naturalWidths = texts.map { Double(width(line($0, size: fontSize))) }
+                    let placement = SongLineLayout(widths: naturalWidths,
+                        availableWidth: Double(columnWidth), minimumGap: Double(fontSize * 1.8))
+                    for (fragmentIndex, text) in texts.enumerated() where !text.isEmpty {
+                        let original = line(text, size: fontSize * placement.scale)
+                        let rendered = texts.count == 1
+                            ? (CTLineCreateJustifiedLine(original, 1, columnWidth) ?? original) : original
+                        context.textPosition = CGPoint(
+                            x: bounds.width - placement.offsetsFromRight[fragmentIndex] - width(rendered),
+                            y: bounds.height - CGFloat(rowIndex) * rowHeight - rowHeight * 0.72)
+                        CTLineDraw(rendered, context)
+                    }
+                    continue
                 }
                 let isPoetry = (column.id == 78 && (6...35).contains(rowIndex)) ||
                     (column.id == 242 && rowIndex >= 7) || (column.id == 243 && rowIndex < 35)

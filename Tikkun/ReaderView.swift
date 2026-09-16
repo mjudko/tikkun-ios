@@ -14,7 +14,11 @@ struct ReaderView: View {
     @AppStorage("readingSize") private var readingSize = 30.0
     @AppStorage("readingSpacing") private var readingSpacing = 12.0
     @AppStorage("torahColumnLayout") private var columnLayout = true
+    #if DEBUG
+    @State private var columnOffset = max(0, UserDefaults.standard.integer(forKey: "previewColumnOffset"))
+    #else
     @State private var columnOffset = 0
+    #endif
     @State private var sheet: ReaderSheet?
     @ScaledMetric(relativeTo: .title) private var scale = 1.0
 

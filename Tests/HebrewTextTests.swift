@@ -2,6 +2,35 @@ import XCTest
 @testable import TikkunCore
 
 final class HebrewTextTests: XCTestCase {
+    func testSongBrickAnchorsAndFit() {
+        let three = SongLineLayout(widths: [20, 80, 20], availableWidth: 200, minimumGap: 20)
+        XCTAssertEqual(three.scale, 1)
+        XCTAssertEqual(three.offsetsFromRight, [0, 60, 180])
+        let two = SongLineLayout(widths: [100, 100], availableWidth: 180, minimumGap: 40)
+        XCTAssertEqual(two.scale, 0.75)
+        XCTAssertEqual(two.offsetsFromRight, [0, 105])
+    }
+
+    func testUpperReadingInBothDecalogues() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        let data = try Data(contentsOf: root.appendingPathComponent("Tikkun/Resources/torah-columns.json"))
+        let columns = try JSONDecoder().decode([TorahColumn].self, from: data)
+        for pages in [[83, 84], [208, 209]] {
+            let words = columns.filter { pages.contains($0.id) }.flatMap(\.rows).flatMap(\.segments).flatMap { $0 }.flatMap { $0 }
+            let upper = words.filter { $0.upperReading != nil }
+            XCTAssertGreaterThan(upper.count, 100)
+            XCTAssertTrue(upper.first!.readingText.contains("אָֽנֹכִי֙"))
+            for word in upper {
+                let consonants: (String) -> String = { String($0.unicodeScalars.filter { (0x05D0...0x05EA).contains($0.value) }) }
+                XCTAssertEqual(consonants(word.text), consonants(word.readingText))
+            }
+            let zachor = upper.first { HebrewText.display($0.text, vowels: false, trope: false) == "זכור" }
+            if pages[0] == 83 {
+                XCTAssertEqual(zachor?.readingText, "זָכוֹר֩")
+            }
+        }
+    }
+
     func testConsonantsAndPunctuationSurvivePractice() {
         XCTAssertEqual(HebrewText.display("בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים׃", vowels: false, trope: false), "בראשית ברא אלהים׃")
         XCTAssertEqual(HebrewText.display("עַל־פְּנֵ֣י", vowels: false, trope: false), "על־פני")

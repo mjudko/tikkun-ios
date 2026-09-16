@@ -34,6 +34,34 @@ def words(text):
             word['ketiv'], word['qeri'] = pairs[int(matches[0][1])]
         yield word
 
+def apply_upper_reading(columns):
+    overlay = json.loads((SOURCE / 'taam-elyon.json').read_text())
+    letters = lambda text: ''.join(c for c in text if '\u05d0' <= c <= '\u05ea')
+    for reading in overlay['readings']:
+        candidates = [w for col in columns if col['id'] in reading['pages']
+                      for row in col['rows'] for segment in row['segments']
+                      for fragment in segment for w in fragment]
+        source = ''.join(letters(w['text']) for w in candidates)
+        target = reading['text']
+        consonants = letters(target)
+        start = source.index(consonants)
+        assert source.count(consonants) == 1
+        # Align by consonants, independent of maqaf, punctuation, and qeri spelling.
+        clusters = re.findall(r'[\u05d0-\u05ea][^\u05d0-\u05ea]*', target)
+        offset = 0
+        selected = []
+        for word in candidates:
+            count = len(letters(word['text']))
+            if start <= offset < start + len(consonants):
+                assert offset + count <= start + len(consonants)
+                word['upperReading'] = ''.join(clusters[offset-start:offset-start+count]).strip()
+                assert letters(word['upperReading']) == letters(word['text'])
+                selected.append(word['upperReading'])
+            offset += count
+        reconstructed = ' '.join(t for t in selected if t).replace('־ ', '־')
+        assert reconstructed == target, reading['book']
+
+
 def generate():
     manifest = json.loads((SOURCE / 'corpus-manifest.json').read_text())
     rows = []
@@ -59,6 +87,8 @@ def generate():
             normalized.insert(36, {'segments': [], 'petucha': False})
         assert len(normalized) == 42, (page, len(normalized))
         columns.append({'id': page, 'rows': normalized})
+    apply_upper_reading(columns)
+    overlay_words = iter(w for col in columns for row in col['rows'] for segment in row['segments'] for fragment in segment for w in fragment)
     (ROOT / 'Tikkun/Resources/torah-columns.json').write_text(json.dumps(columns, ensure_ascii=False, separators=(',', ':')) + '\n')
     catalog = (SOURCE / 'catalog.ts').read_text().split('export const parshiot: Parsha[] = [')[1].split('];')[0]
     pattern = r'slug: "([^"]+)", hebrew: "([^"]+)", english: "([^"]+)", book: (\d+), page: (\d+), line: (\d+), verses: (\d+)'
@@ -70,6 +100,9 @@ def generate():
     start_row = 0
     for row_index, (source_page, row) in enumerate(rows):
         for word in words(' '.join(flatten(row['text']))):
+            annotated = next(overlay_words)
+            assert annotated['text'] == word['text']
+            word = annotated
             if not pending:
                 start_row = row_index
                 start_page = source_page
