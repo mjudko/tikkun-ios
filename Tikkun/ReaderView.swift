@@ -14,6 +14,7 @@ struct ReaderView: View {
     @AppStorage("readingSize") private var readingSize = 30.0
     @AppStorage("readingSpacing") private var readingSpacing = 12.0
     @AppStorage("torahColumnLayout") private var columnLayout = true
+    @AppStorage("showAliyahMarkers") private var showAliyahMarkers = true
     @AppStorage("colorSchemeSelection") private var colorSchemeSelection = ColorSchemeSelection.system
     @Environment(\.colorScheme) private var colorScheme
     #if DEBUG
@@ -51,14 +52,16 @@ struct ReaderView: View {
                         .padding(.horizontal, columnLayout ? 24 : 0)
                         if columnLayout, let activeColumn {
                             columnNavigation.padding(.horizontal, 24)
-                            TorahColumnView(column: activeColumn, vowels: vowels, trope: trope)
+                            TorahColumnView(column: activeColumn, vowels: vowels, trope: trope,
+                                            showAliyahMarkers: showAliyahMarkers)
                             Text("Full amud · may include text from an adjacent parsha. Marks follow your practice settings.")
                                 .font(.caption).foregroundStyle(.secondary)
                                 .padding(.horizontal, 24)
                             columnNavigation.padding(.horizontal, 24)
                         } else {
                             FlowingTextView(words: flowingWords, fontSize: readingSize * scale,
-                                            lineSpacing: readingSpacing, vowels: vowels, trope: trope)
+                                            lineSpacing: readingSpacing, vowels: vowels, trope: trope,
+                                            showAliyahMarkers: showAliyahMarkers)
                         }
                         passageNavigation.padding(.horizontal, columnLayout ? 24 : 0)
                     }
@@ -175,6 +178,9 @@ struct ReaderView: View {
     private var settings: some View {
         NavigationStack {
             Form {
+                Section("Reader") {
+                    Toggle("Aliyah markers", isOn: $showAliyahMarkers)
+                }
                 Section("Flowing text size") {
                     Slider(value: $readingSize, in: 22...46, step: 2) { Text("Text size") }
                     Text("\(Int(readingSize)) pt, adjusted for your device’s text-size setting")

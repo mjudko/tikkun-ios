@@ -9,6 +9,7 @@ struct FlowingTextView: UIViewRepresentable {
     let lineSpacing: CGFloat
     let vowels: Bool
     let trope: Bool
+    let showAliyahMarkers: Bool
 
     func makeUIView(context: Context) -> UITextView {
         let view = UITextView()
@@ -28,15 +29,32 @@ struct FlowingTextView: UIViewRepresentable {
         paragraph.baseWritingDirection = .rightToLeft
         paragraph.lineSpacing = lineSpacing
         paragraph.hyphenationFactor = 0
-        let displayed = words.map {
-            HebrewText.display($0.readingText, vowels: vowels, trope: trope, verseEndings: trope)
-        }.filter { !$0.isEmpty }.joined(separator: " ").replacingOccurrences(of: "־ ", with: "־")
-        let text = NSMutableAttributedString(string: displayed)
-        text.addAttributes([
+        let bodyAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont(name: TorahFont.name, size: fontSize) ?? UIFont.systemFont(ofSize: fontSize),
             .foregroundColor: UIColor.label,
             .paragraphStyle: paragraph
-        ], range: NSRange(location: 0, length: text.length))
+        ]
+        let markerAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: max(12, fontSize * 0.48), weight: .semibold),
+            .foregroundColor: UIColor.systemBrown,
+            .baselineOffset: fontSize * 0.18,
+            .paragraphStyle: paragraph
+        ]
+        let text = NSMutableAttributedString()
+        for word in words {
+            let displayed = HebrewText.display(
+                word.readingText, vowels: vowels, trope: trope, verseEndings: trope
+            ).replacingOccurrences(of: "־ ", with: "־")
+            if showAliyahMarkers, let aliyah = word.aliyah {
+                if text.length > 0 { text.append(NSAttributedString(string: "  ", attributes: bodyAttributes)) }
+                text.append(NSAttributedString(string: AliyahLabel.hebrew(aliyah), attributes: markerAttributes))
+            }
+            guard !displayed.isEmpty else { continue }
+            if text.length > 0, !text.string.hasSuffix("־") {
+                text.append(NSAttributedString(string: " ", attributes: bodyAttributes))
+            }
+            text.append(NSAttributedString(string: displayed, attributes: bodyAttributes))
+        }
         if !view.attributedText.isEqual(to: text) { view.attributedText = text }
     }
 

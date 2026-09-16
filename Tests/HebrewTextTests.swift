@@ -55,6 +55,13 @@ final class HebrewTextTests: XCTestCase {
         XCTAssertEqual(HebrewText.display("׀", vowels: true, trope: false), "")
         XCTAssertEqual(HebrewText.display("׀", vowels: true, trope: true), "׀")
     }
+
+    func testAliyahLabels() {
+        XCTAssertEqual(AliyahLabel.hebrew(1), "ראשון")
+        XCTAssertEqual(AliyahLabel.hebrew(7), "שביעי")
+        XCTAssertEqual(AliyahLabel.hebrew(8), "מפטיר")
+        XCTAssertEqual(AliyahLabel.compact(2), "ב׳")
+    }
     func testScribalMarksAndInvertedNunRemain() {
         XCTAssertEqual(HebrewText.display("׆ אׇֽׅׄ׃", vowels: false, trope: false), "׆ אׅׄ׃")
     }
@@ -89,6 +96,9 @@ final class HebrewTextTests: XCTestCase {
         XCTAssertTrue(columns.allSatisfy { $0.rows.count == 42 })
         let columnWords = columns.flatMap(\.rows).flatMap(\.segments).flatMap { $0 }.flatMap { $0 }
         XCTAssertEqual(columnWords, passages.flatMap(\.blocks).flatMap(\.words))
+        XCTAssertEqual(columns.flatMap(\.rows).compactMap(\.aliyah).count, 429)
+        XCTAssertEqual(columnWords.compactMap(\.aliyah).count, 429)
+        XCTAssertEqual(columns.flatMap(\.rows).compactMap(\.combinedAliyah).count, 41)
         XCTAssertTrue(columns[77].rows[5].segments.isEmpty)
         XCTAssertTrue(columns[77].rows[36].segments.isEmpty)
         XCTAssertTrue(columns[241].rows.contains { $0.segments.count > 1 })

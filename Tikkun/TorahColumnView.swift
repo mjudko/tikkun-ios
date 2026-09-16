@@ -5,6 +5,7 @@ struct TorahColumnView: View {
     let column: TorahColumn
     let vowels: Bool
     let trope: Bool
+    let showAliyahMarkers: Bool
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -18,6 +19,24 @@ struct TorahColumnView: View {
             Rectangle().fill(Color.primary.opacity(0.12)).frame(height: 1)
             ColumnInk(column: column, vowels: vowels, trope: trope)
                 .aspectRatio(1 / 3.65, contentMode: .fit)
+                .overlay {
+                    if showAliyahMarkers {
+                        GeometryReader { geometry in
+                            ForEach(Array(column.rows.enumerated()), id: \.offset) { index, row in
+                                if let aliyah = row.aliyah {
+                                    Text(AliyahLabel.compact(aliyah))
+                                        .font(.caption2.bold())
+                                        .foregroundStyle(Color.brown)
+                                        .padding(.horizontal, 4)
+                                        .padding(.vertical, 2)
+                                        .background(.regularMaterial, in: Capsule())
+                                        .position(x: 2, y: (CGFloat(index) + 0.5) * geometry.size.height / 42)
+                                        .accessibilityLabel("\(AliyahLabel.hebrew(aliyah)) aliyah")
+                                }
+                            }
+                        }
+                    }
+                }
                 .accessibilityLabel("Amud \(column.id). Torah column with 42 lines.")
                 .accessibilityValue(column.rows.flatMap(\.segments).flatMap { $0 }.flatMap { $0 }.map {
                     HebrewText.display($0.readingText, vowels: vowels, trope: trope, verseEndings: trope)

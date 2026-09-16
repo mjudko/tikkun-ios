@@ -34,6 +34,28 @@ def words(text):
             word['ketiv'], word['qeri'] = pairs[int(matches[0][1])]
         yield word
 
+def converted_row(row):
+    segments = [[list(words(fragment)) for fragment in flatten(column)] for column in row['text']]
+    result = {
+        'segments': segments,
+        'petucha': bool(row.get('isPetucha')) or '#(פ)' in str(row['text']),
+    }
+    aliyot = row.get('aliyot', [])
+    standard = next((aliyah['standard'] for aliyah in aliyot if 'standard' in aliyah), None)
+    combined = next((aliyah['double'] for aliyah in aliyot if 'double' in aliyah), None)
+    if standard is not None:
+        result['aliyah'] = standard
+    if combined is not None:
+        result['combinedAliyah'] = combined
+    if standard is not None or combined is not None:
+        first_word = next((word for column in segments for fragment in column for word in fragment), None)
+        assert first_word is not None, 'Aliyah marker must point to a nonblank Torah row'
+        if standard is not None:
+            first_word['aliyah'] = standard
+        if combined is not None:
+            first_word['combinedAliyah'] = combined
+    return result
+
 def apply_upper_reading(columns):
     overlay = json.loads((SOURCE / 'taam-elyon.json').read_text())
     letters = lambda text: ''.join(c for c in text if '\u05d0' <= c <= '\u05ea')
@@ -75,9 +97,7 @@ def generate():
     columns = []
     for page in range(1, 246):
         source_rows = json.loads((SOURCE / f'torah/{page}.json').read_text())
-        normalized = [{'segments': [[list(words(fragment)) for fragment in flatten(column)] for column in row['text']],
-                       'petucha': bool(row.get('isPetucha')) or '#(פ)' in str(row['text'])}
-                      for row in source_rows]
+        normalized = [converted_row(row) for row in source_rows]
         blank = lambda row: not any(word for col in row['segments'] for segment in col for word in segment)
         if page in [61, 111, 148, 200] and len(normalized) == 43:
             start = next(i for i in range(len(normalized)-4) if all(blank(r) for r in normalized[i:i+5]))

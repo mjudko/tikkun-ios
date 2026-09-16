@@ -5,7 +5,29 @@ struct ReadingWord: Codable, Equatable, Sendable {
     let ketiv: String?
     let qeri: String?
     var upperReading: String? = nil
+    var aliyah: Int? = nil
+    var combinedAliyah: Int? = nil
     var readingText: String { upperReading ?? text }
+}
+
+enum AliyahLabel {
+    static func hebrew(_ number: Int) -> String {
+        switch number {
+        case 1: return "ראשון"
+        case 2: return "שני"
+        case 3: return "שלישי"
+        case 4: return "רביעי"
+        case 5: return "חמישי"
+        case 6: return "ששי"
+        case 7: return "שביעי"
+        case 8: return "מפטיר"
+        default: return "עלייה \(number)"
+        }
+    }
+
+    static func compact(_ number: Int) -> String {
+        number == 8 ? "מ׳" : ["", "א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ז׳"][max(0, min(7, number))]
+    }
 }
 
 struct ReadingBlock: Codable, Identifiable, Sendable {
@@ -58,4 +80,6 @@ struct TorahRow: Codable, Sendable {
     /// Source columns, section fragments, then words. Retains internal gaps.
     let segments: [[[ReadingWord]]]
     let petucha: Bool
+    var aliyah: Int? = nil
+    var combinedAliyah: Int? = nil
 }
