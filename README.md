@@ -28,20 +28,19 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 
 ## First milestone
 
-- Continuous flowing text across verse boundaries, with tappable words.
-- The site’s bundled Shlomo Stam Hebrew font in flowing text and word study.
+- Continuous flowing text across verse boundaries.
+- The site’s bundled Shlomo Stam Hebrew font in both reading layouts.
 - A parchment-style Torah-column view with 42 source rows, justified text,
   section gaps, and amud navigation; switch back to flowing text at any time.
 - Searchable selection of all 54 parshiot, grouped by book.
 - Independent vowel and trope practice controls.
-- Tap a word to inspect its marked/unmarked forms and qeri/ketiv, where present.
 - Adjustable text size and line spacing, including Dynamic Type scaling.
 - Passage selection and display preferences saved between launches.
 - Complete offline text, derived from the 245-amud snapshot.
 
 ## Structure
 
-- `Tikkun/ReaderView.swift`: reading screen, passage picker, settings, word study.
+- `Tikkun/ReaderView.swift`: reading screen, passage picker, settings.
 - `Tikkun/TorahColumnView.swift`: native Core Text column shaping and drawing.
 - `Tikkun/TorahFont.swift`: registration of the site’s bundled Hebrew font.
 - `Tikkun/Core/ReadingModels.swift`: data models and Hebrew mark filtering.
@@ -73,7 +72,6 @@ mapping needs a separate audit before verse-range selection is added.
 ## Next milestones
 
 - Aliyah and verse-range selection with verified boundaries.
-- Named cantillation explanations and richer word study.
 - Saved reading position, bookmarks, and rehearsal progress.
 - Column zoom and richer interaction within the fixed-row view.
 - Device/VoiceOver testing, app icon, and distribution setup.
@@ -83,7 +81,7 @@ justification. It is not a pixel-for-pixel reproduction of the site’s experime
 letter stretching or special poetry fitting. It displays the read-aloud (qeri)
 text with optional marks; full amudim can include adjacent parshiot. Text size and
 line-spacing settings apply to flowing text, while columns fit their available
-width. Word inspection is currently available in flowing text.
+width.
 
 Both Torah columns and flowing text always hide sof pasuq (the verse-ending
 colon), regardless of the vowel and trope settings.

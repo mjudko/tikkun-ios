@@ -5,11 +5,6 @@ private enum ReaderSheet: String, Identifiable {
     var id: String { rawValue }
 }
 
-private struct InspectedWord: Identifiable {
-    let id = UUID()
-    let word: ReadingWord
-}
-
 struct ReaderView: View {
     let passages: [Passage]
     let columns: [TorahColumn]
@@ -21,7 +16,6 @@ struct ReaderView: View {
     @AppStorage("torahColumnLayout") private var columnLayout = true
     @State private var columnOffset = 0
     @State private var sheet: ReaderSheet?
-    @State private var inspected: InspectedWord?
     @ScaledMetric(relativeTo: .title) private var scale = 1.0
 
     private var passage: Passage { passages.first { $0.id == selectedID } ?? passages[0] }
@@ -58,9 +52,7 @@ struct ReaderView: View {
                             columnNavigation.padding(.horizontal, 24)
                         } else {
                             FlowingTextView(words: flowingWords, fontSize: readingSize * scale,
-                                            lineSpacing: readingSpacing, vowels: vowels, trope: trope) { word in
-                                inspected = InspectedWord(word: word)
-                            }
+                                            lineSpacing: readingSpacing, vowels: vowels, trope: trope)
                         }
                         passageNavigation.padding(.horizontal, columnLayout ? 24 : 0)
                     }
@@ -90,7 +82,6 @@ struct ReaderView: View {
                 case .settings: settings
                 }
             }
-            .sheet(item: $inspected) { item in WordDetailView(word: item.word) }
         }
     }
 
@@ -103,7 +94,7 @@ struct ReaderView: View {
             }
             Text(passage.bookName).font(.subheadline).foregroundStyle(.secondary)
             Text(passage.lengthSummary).font(.subheadline).foregroundStyle(.secondary)
-            Text(columnLayout ? "Practice from a Torah-style column. Show or hide the marks as you learn." : "Read with the marks, then hide them to practice. Tap a word to take a closer look.")
+            Text(columnLayout ? "Practice from a Torah-style column. Show or hide the marks as you learn." : "Read with the marks, then hide them to practice.")
                 .font(.subheadline).foregroundStyle(.secondary).padding(.top, 4)
         }
         .padding(.bottom, 8)
@@ -231,38 +222,5 @@ private struct PassagePicker: View {
             .navigationTitle("Choose a passage")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
-    }
-}
-
-private struct WordDetailView: View {
-    let word: ReadingWord
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    Text(word.text).font(TorahFont.font(48))
-                        .environment(\.layoutDirection, .rightToLeft)
-                        .padding(.top, 28)
-                    Text("With vowels and trope").font(.subheadline).foregroundStyle(.secondary)
-                    if let qeri = word.qeri, let ketiv = word.ketiv {
-                        VStack(spacing: 12) {
-                            Text("Qeri · read aloud").font(.caption).foregroundStyle(.secondary)
-                            Text(qeri).font(.largeTitle)
-                            Text("Ketiv · written in the scroll").font(.caption).foregroundStyle(.secondary)
-                            Text(ketiv).font(.largeTitle)
-                        }
-                    }
-                    Text("Without marks").font(.caption).foregroundStyle(.secondary)
-                    Text(HebrewText.display(word.text, vowels: false, trope: false))
-                        .font(TorahFont.font(40))
-                        .environment(\.layoutDirection, .rightToLeft)
-                }.padding(24).frame(maxWidth: .infinity)
-            }
-            .navigationTitle("Word study").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        }
-        .presentationDetents([.medium, .large])
     }
 }
