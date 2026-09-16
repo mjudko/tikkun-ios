@@ -50,6 +50,11 @@ final class HebrewTextTests: XCTestCase {
         XCTAssertEqual(HebrewText.display(source, vowels: false, trope: true), "בר֣א")
         XCTAssertEqual(HebrewText.display(source, vowels: true, trope: true), source)
     }
+
+    func testPaseqFollowsTropeSetting() {
+        XCTAssertEqual(HebrewText.display("׀", vowels: true, trope: false), "")
+        XCTAssertEqual(HebrewText.display("׀", vowels: true, trope: true), "׀")
+    }
     func testScribalMarksAndInvertedNunRemain() {
         XCTAssertEqual(HebrewText.display("׆ אׇֽׅׄ׃", vowels: false, trope: false), "׆ אׅׄ׃")
     }
